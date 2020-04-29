@@ -90,6 +90,7 @@ def infer_on_stream(args, client):
     prob_threshold = args.prob_threshold
 
     ### TODO: Load the model through `infer_network` ###
+    exec_net = infer_network.load_model(args.m, args.d, args.l)
 
     ### TODO: Handle the input stream ###
 
