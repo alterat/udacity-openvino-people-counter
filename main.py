@@ -74,6 +74,22 @@ def connect_mqtt():
 
     return client
 
+def preprocessing(image, height, width):
+    '''
+    Given an input image, height and width:
+    - Resize to width and height
+    - Transpose the final "channel" dimension to be first
+    - Reshape the image to add a "batch" of 1 at the start 
+    '''
+    # image = np.copy(input_image)
+    try:
+        image = cv2.resize(image, (width, height), cv2.INTER_CUBIC)
+    except TypeError:
+        return None
+    image = image.transpose((2,0,1))
+    image = image.reshape(1, 3, height, width)
+
+    return image
 
 def infer_on_stream(args, client):
     """
@@ -85,12 +101,12 @@ def infer_on_stream(args, client):
     :return: None
     """
     # Initialise the class
-    infer_network = Network()
+    inf_net = Network()
     # Set Probability threshold for detections
     prob_threshold = args.prob_threshold
 
     ### TODO: Load the model through `infer_network` ###
-    exec_net = infer_network.load_model(args.m, args.d, args.l)
+    exec_net = inf_net.load_model(args.m, args.d, args.l)
 
     ### TODO: Handle the input stream ###
 
@@ -131,6 +147,29 @@ def main():
     # Perform inference on the input stream
     infer_on_stream(args, client)
 
+def test_inference():
+    args = build_argparser().parse_args()
+
+    # Create inference network and load model
+    inf_net = Network()
+    inf_net.load_model(args.model, args.device, args.cpu_extension)
+    
+    # dimensions of input image
+    dims = inf_net.get_input_shape()
+    n, c, h, w = dims
+
+    # Read the input image and preprocess
+    image = cv2.imread(args.input)
+    input_img = preprocessing(image, h, w)
+
+    # Start async inference
+    inf_net.exec_net(input_img)
+    inf_net.wait()
+
+    output = inf_net.get_output()
+
+    print(output)
 
 if __name__ == '__main__':
-    main()
+    # main()
+    test_inference()

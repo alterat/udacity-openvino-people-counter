@@ -36,10 +36,12 @@ class Network:
 
     def __init__(self):
         ### TODO: Initialize any class variables desired ###
-        self.plugin = None
+        self.ie = None
         self.input_blob = None
         self.network = None
         self.exec_network = None
+        self.request_handle = None
+        self.request_status = None
 
     def load_model(self, model, device="CPU", cpu_extension=None):
         '''
@@ -48,27 +50,29 @@ class Network:
         Synchronous requests made within.
         ''' 
         
-        # Initialize the plugin
-        self.plugin = IECore()
+        # Initialize the ie
+        self.ie = IECore()
 
         ### Load the model ###
         model_xml = model
         model_bin = os.path.splitext(model_xml)[0] + ".bin"
 
         # Read the IR as a IENetwork
-        self.network = IENetwork(model=model_xml, weights=model_bin)
+        self.network = self.ie.read_network(model=model_xml, weights=model_bin)
 
         ### TODO: Check for supported layers ###
 
         ### Add any necessary extensions ###
         if cpu_extension and "CPU" in device:
-            self.plugin.add_extension(cpu_extension, device)
+            self.ie.add_extension(cpu_extension, device)
 
-        ### Return the loaded inference plugin ###
+        # Get the input layer
+        self.input_blob = next(iter(self.network.inputs))
+
+        ### Return the loaded inference ie ###
         ### Note: You may need to update the function parameters. ###
-
-        # Load the IENetwork into the plugin
-        self.exec_network = self.plugin.load_network(network=self.network, device_name=device, num_requests=0)
+        # Load the IENetwork into the ie
+        self.exec_network = self.ie.load_network(network=self.network, device_name=device, num_requests=0)
 
         return self.exec_network
 
@@ -80,19 +84,26 @@ class Network:
         # Return the input shape (to determine preprocessing)
         return self.network.inputs[self.input_blob].shape
 
-    def exec_net(self):
-        ### TODO: Start an asynchronous request ###
-        ### TODO: Return any necessary information ###
+    def exec_net(self, image):
+        ### Start an asynchronous request ###
+        ### Return any necessary information ###
         ### Note: You may need to update the function parameters. ###
-        return
+        '''
+        Perform async inference and return status handle
+        '''
+        self.request_handle = self.exec_network.start_async(request_id=0, inputs={self.input_blob: image})
+        return self.request_handle
 
     def wait(self):
-        ### TODO: Wait for the request to be complete. ###
-        ### TODO: Return any necessary information ###
+        ### Wait for the request to be complete. ###
+        ### Return any necessary information ###
         ### Note: You may need to update the function parameters. ###
-        return
 
-    def get_output(self):
-        ### TODO: Extract and return the output results
+        self.request_status = self.request_handle.wait()
+        return self.request_status
+
+    def get_output(self, req_id=0):
+        ### Extract and return the output results
         ### Note: You may need to update the function parameters. ###
-        return
+
+        return self.exec_network.requests[req_id].outputs
