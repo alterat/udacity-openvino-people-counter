@@ -27,6 +27,7 @@ import socket
 import json
 import cv2
 
+import time
 import logging as log
 import paho.mqtt.client as mqtt
 
@@ -105,24 +106,45 @@ def infer_on_stream(args, client):
     # Set Probability threshold for detections
     prob_threshold = args.prob_threshold
 
-    ### TODO: Load the model through `infer_network` ###
-    exec_net = inf_net.load_model(args.m, args.d, args.l)
+    # Create inference network and load model
+    inf_net = Network()
+    inf_net.load_model(args.model, args.device, args.cpu_extension)
+    
+    # dimensions of input image
+    dims = inf_net.get_input_shape()
+    n, c, h, w = dims
 
     ### TODO: Handle the input stream ###
+    # Get and open video capture
+    cap = cv2.VideoCapture(args.input)
+    cap.open(args.input)
+
+    print("Start inference loop")
+    start_time = time.time()
 
     ### TODO: Loop until stream is over ###
+    while cap.isOpened():
 
         ### TODO: Read from the video capture ###
+        flag, frame = cap.read()
+        if not flag:
+            break
+        key_pressed = cv2.waitKey(60)
 
         ### TODO: Pre-process the image as needed ###
+        proc_frame = preprocessing(frame, h, w)
 
         ### TODO: Start asynchronous inference for specified request ###
+        inf_net.exec_net(proc_frame)
 
         ### TODO: Wait for the result ###
+        if inf_net.wait() == 0:
 
             ### TODO: Get the results of the inference request ###
+            output = inf_net.get_output()
 
             ### TODO: Extract any desired stats from the results ###
+            print(output)
 
             ### TODO: Calculate and send relevant information on ###
             ### current_count, total_count and duration to the MQTT server ###
@@ -133,6 +155,14 @@ def infer_on_stream(args, client):
 
         ### TODO: Write an output image if `single_image_mode` ###
 
+        # Break if escape key pressed
+        if key_pressed == 27:
+            break
+
+    end_time = time.time()
+    print("End inference loop")
+
+    print(f'Elapsed time: {end_time-start_time:.2f}')
 
 def main():
     """
@@ -171,5 +201,5 @@ def test_inference():
     print(output)
 
 if __name__ == '__main__':
-    # main()
-    test_inference()
+    main()
+    # test_inference()
