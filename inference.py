@@ -68,6 +68,7 @@ class Network:
 
         # Get the input layer
         self.input_blob = next(iter(self.network.inputs))
+        self.output_blob = next(iter(self.network.outputs))
 
         ### Return the loaded inference ie ###
         ### Note: You may need to update the function parameters. ###
@@ -106,4 +107,4 @@ class Network:
         ### Extract and return the output results
         ### Note: You may need to update the function parameters. ###
 
-        return self.exec_network.requests[req_id].outputs
+        return self.exec_network.requests[req_id].outputs[self.output_blob]

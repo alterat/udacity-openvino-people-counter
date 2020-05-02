@@ -33,6 +33,7 @@ import paho.mqtt.client as mqtt
 
 from argparse import ArgumentParser
 from inference import Network
+from cocohelper import extract_people
 
 # MQTT server environment variables
 HOSTNAME = socket.gethostname()
@@ -144,7 +145,8 @@ def infer_on_stream(args, client):
             output = inf_net.get_output()
 
             ### TODO: Extract any desired stats from the results ###
-            print(output)
+            print(output.squeeze())
+            print(extract_people(output))
 
             ### TODO: Calculate and send relevant information on ###
             ### current_count, total_count and duration to the MQTT server ###
