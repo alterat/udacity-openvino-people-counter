@@ -149,7 +149,6 @@ def infer_on_stream(args, client):
             output = inf_net.get_output()
 
             ### TODO: Extract any desired stats from the results ###
-            # print(output.squeeze())
             people = extract_people(output)
             people_count = people.shape[0]
 
