@@ -26,6 +26,7 @@ import time
 import socket
 import json
 import cv2
+import numpy as np
 
 import time
 import logging as log
@@ -71,8 +72,9 @@ def build_argparser():
 
 
 def connect_mqtt():
-    ### TODO: Connect to the MQTT client ###
-    client = None
+    ### Connect to the MQTT client ###
+    client = mqtt.Client()
+    client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
 
     return client
 
@@ -115,45 +117,58 @@ def infer_on_stream(args, client):
     dims = inf_net.get_input_shape()
     n, c, h, w = dims
 
-    ### TODO: Handle the input stream ###
+    ### Handle the input stream ###
     # Get and open video capture
     cap = cv2.VideoCapture(args.input)
     cap.open(args.input)
 
-    print("Start inference loop")
+    # print("Start inference loop")
     start_time = time.time()
 
-    ### TODO: Loop until stream is over ###
+    ### Loop until stream is over ###
+    # TODO: Remove dummy counter
+    c = 0
     while cap.isOpened():
 
-        ### TODO: Read from the video capture ###
+        ### Read from the video capture ###
         flag, frame = cap.read()
         if not flag:
             break
         key_pressed = cv2.waitKey(60)
 
-        ### TODO: Pre-process the image as needed ###
+        ### Pre-process the image as needed ###
         proc_frame = preprocessing(frame, h, w)
 
-        ### TODO: Start asynchronous inference for specified request ###
+        ### Start asynchronous inference for specified request ###
         inf_net.exec_net(proc_frame)
 
-        ### TODO: Wait for the result ###
+        ### Wait for the result ###
         if inf_net.wait() == 0:
 
-            ### TODO: Get the results of the inference request ###
+            ### Get the results of the inference request ###
             output = inf_net.get_output()
 
             ### TODO: Extract any desired stats from the results ###
-            print(output.squeeze())
-            print(extract_people(output))
+            # print(output.squeeze())
+            people = extract_people(output)
+            people_count = people.shape[0]
+
 
             ### TODO: Calculate and send relevant information on ###
             ### current_count, total_count and duration to the MQTT server ###
             ### Topic "person": keys of "count" and "total" ###
             ### Topic "person/duration": key of "duration" ###
+            if not client is None:
+                client.publish("person", json.dumps({"count": people_count, 'total': str(c)}))
+                client.publish("person/duration", json.dumps({"duration": str(c)}))
+                c+=1
 
-        ### TODO: Send the frame to the FFMPEG server ###
+        ### Send the frame to the FFMPEG server ###
+        try:
+            sys.stdout.buffer.write(frame)  
+            sys.stdout.flush()
+        except BrokenPipeError:
+            print ('BrokenPipeError caught', file = sys.stderr)
 
         ### TODO: Write an output image if `single_image_mode` ###
 
@@ -162,9 +177,11 @@ def infer_on_stream(args, client):
             break
 
     end_time = time.time()
-    print("End inference loop")
+    # print("End inference loop")
 
-    print(f'Elapsed time: {end_time-start_time:.2f}')
+    # print(f'Elapsed time: {end_time-start_time:.2f}')
+    sys.stderr.close()
+    client.disconnect()
 
 def main():
     """
@@ -204,4 +221,3 @@ def test_inference():
 
 if __name__ == '__main__':
     main()
-    # test_inference()
