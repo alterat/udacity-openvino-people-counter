@@ -35,6 +35,7 @@ import paho.mqtt.client as mqtt
 from argparse import ArgumentParser
 from inference import Network
 from cocohelper import extract_people
+from handle_image import preprocessing
 
 # MQTT server environment variables
 HOSTNAME = socket.gethostname()
@@ -78,22 +79,6 @@ def connect_mqtt():
 
     return client
 
-def preprocessing(image, height, width):
-    '''
-    Given an input image, height and width:
-    - Resize to width and height
-    - Transpose the final "channel" dimension to be first
-    - Reshape the image to add a "batch" of 1 at the start 
-    '''
-    # image = np.copy(input_image)
-    try:
-        image = cv2.resize(image, (width, height), cv2.INTER_CUBIC)
-    except TypeError:
-        return None
-    image = image.transpose((2,0,1))
-    image = image.reshape(1, 3, height, width)
-
-    return image
 
 def infer_on_stream(args, client):
     """
@@ -128,6 +113,9 @@ def infer_on_stream(args, client):
     ### Loop until stream is over ###
     # TODO: Remove dummy counter
     c = 0
+
+    tot_people = 0
+
     while cap.isOpened():
 
         ### Read from the video capture ###
@@ -216,7 +204,9 @@ def test_inference():
 
     output = inf_net.get_output()
 
-    print(output)
+    people = extract_people(output)
+    print(people)
 
 if __name__ == '__main__':
-    main()
+    # main()
+    test_inference()

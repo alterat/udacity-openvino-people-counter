@@ -26,6 +26,8 @@ def process_output(preds):
 def extract_people(preds):
     '''
     Extract people predictions from output blob.
+
+    People have label_id==1
     '''
     if preds.shape != OUTPUT_SHAPE:
         preds = preds.squeeze()
