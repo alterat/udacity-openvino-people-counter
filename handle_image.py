@@ -16,3 +16,23 @@ def preprocessing(image, height, width):
     image = image.reshape(1, 3, height, width)
 
     return image
+
+def draw_box(image, person):
+    '''
+    Draw boxes around a person in the image.
+
+    '''
+    H,W,_ = image.shape
+    # print(H,W)
+
+    _,_ , _, x1, y1, x2, y2 = person
+
+    x1 = int(W * x1)
+    x2 = int(W * x2)
+    y1 = int(H * y1)
+    y2 = int(H * y2)
+
+    # print(x1,y1,x2,y2)
+    image = cv2.rectangle(image, (x1,y1), (x2,y2), (0,0,255), 2)
+
+    return image

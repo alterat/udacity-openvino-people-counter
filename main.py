@@ -35,7 +35,7 @@ import paho.mqtt.client as mqtt
 from argparse import ArgumentParser
 from inference import Network
 from cocohelper import extract_people
-from handle_image import preprocessing
+from handle_image import preprocessing, draw_box
 
 # MQTT server environment variables
 HOSTNAME = socket.gethostname()
@@ -140,6 +140,8 @@ def infer_on_stream(args, client):
             people = extract_people(output)
             people_count = people.shape[0]
 
+            for person in people:
+                frame = draw_box(frame, person)
 
             ### TODO: Calculate and send relevant information on ###
             ### current_count, total_count and duration to the MQTT server ###
@@ -207,6 +209,11 @@ def test_inference():
     people = extract_people(output)
     print(people)
 
+    for person in people:
+        image = draw_box(image, person)
+
+    cv2.imwrite('./test.jpg', image)
+
 if __name__ == '__main__':
-    # main()
-    test_inference()
+    main()
+    # test_inference()

@@ -17,7 +17,9 @@ def process_output(preds):
     Process output blob from ssd_inception_v2 model
 
     Format of output:
-    img_id, label_id, x, y, width, height, score
+    img_id, label_id, score, x1, y1, x2, y2
+
+    Note: this is different from the format specified in the COCO main page.
     '''
 
     # Fill in if you want more objects
