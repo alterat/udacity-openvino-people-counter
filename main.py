@@ -153,9 +153,11 @@ def infer_on_stream(args, client):
             ### Get the results of the inference request ###
             output = inf_net.get_output()
 
-            ### TODO: Extract any desired stats from the results ###
+            ### Extract any desired stats from the results ###
             people = extract_people(output)
             # number of people (boxes) in the current frame
+
+            ### TODO: check confidence of prediction before keeping box
             people_count = people.shape[0]
 
             # === Get the number of people in the last N frames
@@ -180,21 +182,19 @@ def infer_on_stream(args, client):
                 duration = end-start
                 publish_duration = True
 
-
             for person in people:
                 frame = draw_box(frame, person)
 
-            ### TODO: Calculate and send relevant information on ###
+            ### Calculate and send relevant information on ###
             ### current_count, total_count and duration to the MQTT server ###
             ### Topic "person": keys of "count" and "total" ###
             ### Topic "person/duration": key of "duration" ###
             if not client is None:
                 client.publish("person", json.dumps({"count": current_count, 'total': tot_people}))
+                # Publish 'duration' only when person leaves the scene
                 if publish_duration:
                     client.publish("person/duration", json.dumps({"duration": duration}))
                     publish_duration = False
-
-            # Publish 'duration' only when person leaves the scene
 
         ### Send the frame to the FFMPEG server ###
         try:
