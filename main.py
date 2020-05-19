@@ -44,6 +44,8 @@ MQTT_HOST = IPADDRESS
 MQTT_PORT = 3001
 MQTT_KEEPALIVE_INTERVAL = 60
 
+# frames needed for a person to disappear from screen
+N_FRAMES_LIMIT = 5
 
 def build_argparser():
     """
@@ -79,6 +81,12 @@ def connect_mqtt():
 
     return client
 
+def most_frequent(List):
+    '''
+    Find most frequent value in a list.
+    https://www.geeksforgeeks.org/python-find-most-frequent-element-in-a-list/
+    '''
+    return max(set(List), key = List.count)
 
 def infer_on_stream(args, client):
     """
@@ -114,7 +122,16 @@ def infer_on_stream(args, client):
     # TODO: Remove dummy counter
     c = 0
 
+    # initialise variables
     tot_people = 0
+    n_last_frames = [0] * N_FRAMES_LIMIT
+    current_count = 0
+    previous_count = 0
+    delta = 0
+    duration = 0
+    start = 0
+    end = 0
+    publish_duration = False
 
     while cap.isOpened():
 
@@ -138,7 +155,31 @@ def infer_on_stream(args, client):
 
             ### TODO: Extract any desired stats from the results ###
             people = extract_people(output)
+            # number of people (boxes) in the current frame
             people_count = people.shape[0]
+
+            # === Get the number of people in the last N frames
+            # Reduces the jitter due to inference errors
+            # ===
+            # update last counts vector
+            n_last_frames.pop(0)
+            n_last_frames.append(people_count)
+
+            # get most frequent value
+            previous_count = current_count
+            current_count = most_frequent(n_last_frames)
+            delta = current_count - previous_count
+            if delta>0:
+                # update number of people seen
+                tot_people+=delta
+                # start counting time
+                start = time.time()
+            elif delta<0:
+                # stop time and calculate duration
+                end = time.time()
+                duration = end-start
+                publish_duration = True
+
 
             for person in people:
                 frame = draw_box(frame, person)
@@ -148,9 +189,12 @@ def infer_on_stream(args, client):
             ### Topic "person": keys of "count" and "total" ###
             ### Topic "person/duration": key of "duration" ###
             if not client is None:
-                client.publish("person", json.dumps({"count": people_count, 'total': str(c)}))
-                client.publish("person/duration", json.dumps({"duration": str(c)}))
-                c+=1
+                client.publish("person", json.dumps({"count": current_count, 'total': tot_people}))
+                if publish_duration:
+                    client.publish("person/duration", json.dumps({"duration": duration}))
+                    publish_duration = False
+
+            # Publish 'duration' only when person leaves the scene
 
         ### Send the frame to the FFMPEG server ###
         try:
