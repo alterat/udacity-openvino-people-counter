@@ -17,7 +17,7 @@ def preprocessing(image, height, width):
 
     return image
 
-def draw_box(image, person):
+def draw_box(image, person, thres):
     '''
     Draw boxes around a person in the image.
 
@@ -25,7 +25,7 @@ def draw_box(image, person):
     H,W,_ = image.shape
     # print(H,W)
 
-    _,_ , _, x1, y1, x2, y2 = person
+    _,_ , score, x1, y1, x2, y2 = person
 
     x1 = int(W * x1)
     x2 = int(W * x2)
@@ -33,6 +33,13 @@ def draw_box(image, person):
     y2 = int(H * y2)
 
     # print(x1,y1,x2,y2)
-    image = cv2.rectangle(image, (x1,y1), (x2,y2), (0,0,255), 2)
+    if score>=thres:
+        # green
+        colour = (0,255,0)
+    else:
+        #red
+        colour = (0,0,255)
+
+    image = cv2.rectangle(image, (x1,y1), (x2,y2), colour, 2)
 
     return image

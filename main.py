@@ -45,7 +45,7 @@ MQTT_PORT = 3001
 MQTT_KEEPALIVE_INTERVAL = 60
 
 # frames needed for a person to disappear from screen
-N_FRAMES_LIMIT = 5
+N_FRAMES_LIMIT = 10
 
 def build_argparser():
     """
@@ -157,8 +157,9 @@ def infer_on_stream(args, client):
             people = extract_people(output)
             # number of people (boxes) in the current frame
 
-            ### TODO: check confidence of prediction before keeping box
-            people_count = people.shape[0]
+            ### Check confidence of prediction before keeping box
+            scores = people[:,2]
+            people_count = people[scores>=prob_threshold].shape[0]
 
             # === Get the number of people in the last N frames
             # Reduces the jitter due to inference errors
@@ -183,7 +184,7 @@ def infer_on_stream(args, client):
                 publish_duration = True
 
             for person in people:
-                frame = draw_box(frame, person)
+                frame = draw_box(frame, person, prob_threshold)
 
             ### Calculate and send relevant information on ###
             ### current_count, total_count and duration to the MQTT server ###
