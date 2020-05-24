@@ -197,14 +197,18 @@ def infer_on_stream(args, client):
                     client.publish("person/duration", json.dumps({"duration": duration}))
                     publish_duration = False
 
-        ### Send the frame to the FFMPEG server ###
-        try:
-            sys.stdout.buffer.write(frame)  
-            sys.stdout.flush()
-        except BrokenPipeError:
-            print ('BrokenPipeError caught', file = sys.stderr)
-
         ### TODO: Write an output image if `single_image_mode` ###
+        if args.input.endswith('.jpg'):
+            # save image
+            outname = args.input.replace(".jpg",'_output.jpg')
+            cv2.imwrite(outname, frame)
+        else:
+            ### Send the frame to the FFMPEG server ###
+            try:
+                sys.stdout.buffer.write(frame)  
+                sys.stdout.flush()
+            except BrokenPipeError:
+                print ('BrokenPipeError caught', file = sys.stderr)
 
         # Break if escape key pressed
         if key_pressed == 27:
