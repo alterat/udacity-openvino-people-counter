@@ -112,8 +112,14 @@ def infer_on_stream(args, client):
 
     ### Handle the input stream ###
     # Get and open video capture
-    cap = cv2.VideoCapture(args.input)
-    cap.open(args.input)
+    in_stream = args.input
+    if in_stream=="CAM":
+        in_stream=0
+    cap = cv2.VideoCapture(in_stream)
+    cap.open(in_stream)
+    if args.input=="CAM":
+        # MacOS camera has 1280x720 resolution
+        cap.set(cv2.CAP_PROP_FPS, 25)
 
     # print("Start inference loop")
     start_time = time.time()
@@ -229,6 +235,13 @@ def main():
     """
     # Grab command line args
     args = build_argparser().parse_args()
+
+    # Check input stream and close if not supported
+    # Supported formats: "CAM", "*.jpg", "*,mp4"
+    if (args.input!="CAM") & (not args.input.endswith('.jpg')) & (not args.input.endswith('.mp4')):
+        print("Input file not supported!")
+        sys.exit()
+
     # Connect to the MQTT server
     client = connect_mqtt()
     # Perform inference on the input stream
