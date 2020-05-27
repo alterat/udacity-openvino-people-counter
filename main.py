@@ -197,7 +197,7 @@ def infer_on_stream(args, client):
                     client.publish("person/duration", json.dumps({"duration": duration}))
                     publish_duration = False
 
-        ### TODO: Write an output image if `single_image_mode` ###
+        ### Write an output image if `single_image_mode` ###
         if args.input.endswith('.jpg'):
             # save image
             outname = args.input.replace(".jpg",'_output.jpg')
