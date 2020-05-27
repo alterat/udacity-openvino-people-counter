@@ -60,7 +60,15 @@ class Network:
         # Read the IR as a IENetwork
         self.network = self.ie.read_network(model=model_xml, weights=model_bin)
 
-        ### TODO: Check for supported layers ###
+        ### Check for supported layers ###
+        if device=="CPU":
+            supported_layers = self.ie.query_network(network=self.network, device_name=device)
+            not_supported = []
+            for key in supported_layers:
+                if not device in supported_layers[key]:
+                    not_supported.append(key)
+            if len(not_supported)>0:
+                print(f"Layers not supported: {not_supported}")
 
         ### Add any necessary extensions ###
         if cpu_extension and "CPU" in device:
