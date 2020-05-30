@@ -125,9 +125,6 @@ def infer_on_stream(args, client):
     start_time = time.time()
 
     ### Loop until stream is over ###
-    # TODO: Remove dummy counter
-    c = 0
-
     # initialise variables
     tot_people = 0
     n_last_frames = [0] * N_FRAMES_LIMIT

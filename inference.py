@@ -35,7 +35,7 @@ class Network:
     """
 
     def __init__(self):
-        ### TODO: Initialize any class variables desired ###
+        ### Initialize any class variables desired ###
         self.ie = None
         self.input_blob = None
         self.network = None
