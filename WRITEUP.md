@@ -15,7 +15,7 @@ The chosen model is [SSD Mobilenet trained on the COCO dataset](http://download.
 After saving the tar file on the Desktop, the conversion to an OpenVINO Intermediate Representation (IR) has been achieved with the following command:
 
 ```
-python /opt/intel/openvino/deployment_tools/model_optimizer/mo_tf.py --transformations_config /opt/intel/openvino/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json --reverse_input_channels --saved_model_dir ~/Desktop/ssd_inception_v2_coco_2018_03_29/saved_model/ --tensorflow_object_detection_api_pipeline_config ~/Desktop/ssd_inception_v2_coco_2018_03_29/pipeline.config 
+python /opt/intel/openvino/deployment_tools/model_optimizer/mo_tf.py --transformations_config /opt/intel/openvino/deployment_tools/model_optimizer/extensions/front/tf/ssd_v2_support.json --reverse_input_channels --saved_model_dir model/ssd_inception_v2_coco_2018_03_29/saved_model/ --tensorflow_object_detection_api_pipeline_config model/ssd_inception_v2_coco_2018_03_29/pipeline.config 
 ```
 
 Note the `--transformations_config` parameter that replaces the deprecated `--tensorflow_use_custom_operations_config` in the latest OpenVINO versions.
@@ -41,7 +41,7 @@ In order to compare the model before and after conversion to IR, I created a sep
 
 Test were performed on the following test image:
 
-![Man standing on a rock]('./writeup-images/test-image.jpg')
+![Man standing on a rock](writeup-images/test-image.jpg)
 
 The difference between model accuracy pre- and post-conversion was negligible, with the following results (the first number represents the accuracy, while the other 4 are the bounding box. Notice how x and y coordinates are reversed in the original TF model.)
 
@@ -68,7 +68,7 @@ The size of the model pre- and post-conversion was 210 Mb and 34 Mb respectively
 
 The inference times of the model pre- and post-conversion is reported in the following graph.
 
-![Inference times for SSD Mobilenet v2]('./writup-images/times.png')
+![Inference times for SSD Mobilenet v2](writeup-images/times.png)
 
 A single inference with the original TF model requires 159 ms, while only 34 ms are required for the IR on a CPU. Surprisingly, inference on a NCS2 took twice as long (68 ms), but this is in line with [the results reported by other people](https://medium.com/@aallan/benchmarking-edge-computing-ce3f13942245). 
 
