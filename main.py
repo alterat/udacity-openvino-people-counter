@@ -310,6 +310,6 @@ def time_inference():
     print(f'    {elapsed/N_iter * 1000} ms')
 
 if __name__ == '__main__':
-    # main()
+    main()
     # test_inference()
-    time_inference()
+    # time_inference()
