@@ -166,7 +166,7 @@ If you are in the classroom workspace, use the “Open App” button to view the
 To run on the Intel® Neural Compute Stick, use the ```-d MYRIAD``` command-line argument:
 
 ```
-python3.5 main.py -d MYRIAD -i resources/Pedestrian_Detect_2_1_1.mp4 -m your-model.xml -pt 0.6 | ./ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
+python3.5 main.py -d MYRIAD -i resources/Pedestrian_Detect_2_1_1.mp4 -m model/FP16/saved_model.xml -pt 0.6 | ./ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
 ```
 
 To see the output on a web based interface, open the link [http://0.0.0.0:3004](http://0.0.0.0:3004/) in a browser.
@@ -179,7 +179,7 @@ To get the input video from the camera, use the `-i CAM` command-line argument. 
 
 For example:
 ```
-python main.py -i CAM -m your-model.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.6 | ./ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
+python main.py -i CAM -m model/FP16/saved_model.xml -l /opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU -pt 0.6 | ./ffmpeg -v warning -f rawvideo -pixel_format bgr24 -video_size 768x432 -framerate 24 -i - http://0.0.0.0:3004/fac.ffm
 ```
 
 To see the output on a web based interface, open the link [http://0.0.0.0:3004](http://0.0.0.0:3004/) in a browser.
