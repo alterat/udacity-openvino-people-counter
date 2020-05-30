@@ -276,6 +276,40 @@ def test_inference():
 
     cv2.imwrite('./test.jpg', image)
 
+def time_inference():
+    args = build_argparser().parse_args()
+
+    # Create inference network and load model
+    inf_net = Network()
+    inf_net.load_model(args.model, args.device, args.cpu_extension)
+    
+    # dimensions of input image
+    dims = inf_net.get_input_shape()
+    n, c, h, w = dims
+
+    # Read the input image and preprocess
+    image = cv2.imread(args.input)
+    input_img = preprocessing(image, h, w)
+
+    # Run inference 100 times and take average time
+    start = time.time()
+    N_iter = 1
+    for ind in range(N_iter):
+        # Start async inference
+        inf_net.exec_net(input_img)
+        if inf_net.wait()==0:
+            output = inf_net.get_output()
+
+    end = time.time()
+    elapsed = end-start
+
+    print('=== Output of the inference')
+    print(output)
+
+    print('=== Average time for single inference')
+    print(f'    {elapsed/N_iter * 1000} ms')
+
 if __name__ == '__main__':
-    main()
+    # main()
     # test_inference()
+    time_inference()
