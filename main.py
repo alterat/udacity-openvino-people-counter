@@ -123,9 +123,6 @@ def infer_on_stream(args, client):
         # MacOS camera has 1280x720 resolution
         cap.set(cv2.CAP_PROP_FPS, 25)
 
-    # print("Start inference loop")
-    start_time = time.time()
-
     ### Loop until stream is over ###
     # initialise variables
     tot_people = 0
