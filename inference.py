@@ -93,14 +93,14 @@ class Network:
         # Return the input shape (to determine preprocessing)
         return self.network.inputs[self.input_blob].shape
 
-    def exec_net(self, image):
+    def exec_net(self, image, request_id=0):
         ### Start an asynchronous request ###
         ### Return any necessary information ###
         ### Note: You may need to update the function parameters. ###
         '''
         Perform async inference and return status handle
         '''
-        self.request_handle = self.exec_network.start_async(request_id=0, inputs={self.input_blob: image})
+        self.request_handle = self.exec_network.start_async(request_id, inputs={self.input_blob: image})
         return self.request_handle
 
     def wait(self):
