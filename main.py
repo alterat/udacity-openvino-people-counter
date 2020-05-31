@@ -44,8 +44,10 @@ MQTT_HOST = IPADDRESS
 MQTT_PORT = 3001
 MQTT_KEEPALIVE_INTERVAL = 60
 
-# frames needed for a person to disappear from screen
+# Frames needed for a person to disappear from screen
 N_FRAMES_LIMIT = 10
+# Frame rate of the video
+FPS = 10
 
 def build_argparser():
     """
@@ -121,13 +123,7 @@ def infer_on_stream(args, client):
         # MacOS camera has 1280x720 resolution
         cap.set(cv2.CAP_PROP_FPS, 25)
 
-    # print("Start inference loop")
-    start_time = time.time()
-
     ### Loop until stream is over ###
-    # TODO: Remove dummy counter
-    c = 0
-
     # initialise variables
     tot_people = 0
     n_last_frames = [0] * N_FRAMES_LIMIT
@@ -135,9 +131,8 @@ def infer_on_stream(args, client):
     previous_count = 0
     delta = 0
     duration = 0
-    start = 0
-    end = 0
     publish_duration = False
+    counting = False
 
     while cap.isOpened():
 
@@ -182,12 +177,16 @@ def infer_on_stream(args, client):
                 # update number of people seen
                 tot_people+=delta
                 # start counting time
-                start = time.time()
+                nfs=0   # number of frames 
+                counting = True
             elif delta<0:
                 # stop time and calculate duration
-                end = time.time()
-                duration = end-start
+                duration = nfs/FPS # the total duration is the number of frames divided by the video frame rate
                 publish_duration = True
+                counting = False
+            else:
+                if counting:
+                    nfs+=1
 
             for person in people:
                 frame = draw_box(frame, person, prob_threshold)
@@ -250,6 +249,7 @@ def main():
 def test_inference():
     args = build_argparser().parse_args()
 
+    thres = args.prob_threshold
     # Create inference network and load model
     inf_net = Network()
     inf_net.load_model(args.model, args.device, args.cpu_extension)
@@ -272,7 +272,7 @@ def test_inference():
     print(people)
 
     for person in people:
-        image = draw_box(image, person)
+        image = draw_box(image, person, thres)
 
     cv2.imwrite('./test.jpg', image)
 

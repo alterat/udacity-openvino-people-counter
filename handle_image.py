@@ -23,7 +23,6 @@ def draw_box(image, person, thres):
 
     '''
     H,W,_ = image.shape
-    # print(H,W)
 
     _,_ , score, x1, y1, x2, y2 = person
 
@@ -32,14 +31,13 @@ def draw_box(image, person, thres):
     y1 = int(H * y1)
     y2 = int(H * y2)
 
-    # print(x1,y1,x2,y2)
     if score>=thres:
         # green
         colour = (0,255,0)
-    else:
-        #red
-        colour = (0,0,255)
+    # else:
+    #     #red
+    #     colour = (0,0,255)
 
-    image = cv2.rectangle(image, (x1,y1), (x2,y2), colour, 2)
+        image = cv2.rectangle(image, (x1,y1), (x2,y2), colour, 2)
 
     return image
